@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- CoreWCF para EXPONER el BusESB como servicio SOAP hacia la WebCliente -->
+    <PackageReference Include="CoreWCF.Primitives" Version="1.9.1" />
+    <PackageReference Include="CoreWCF.Http" Version="1.9.1" />
+
+    <!-- System.ServiceModel.Primitives para CONSUMIR los 3 servicios SOAP
+         (Pasajeros, Rutas, Disponibilidad) como cliente SOAP -->
+    <PackageReference Include="System.ServiceModel.Primitives" Version="6.2.0" />
+    <PackageReference Include="System.ServiceModel.Http" Version="6.2.0" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,236 @@
+@page
+@model WebCliente.Pages.IndexModel
+
+<style>
+    .card {
+        background: #FFFFFF;
+        border: 1px solid #D8D5CA;
+        border-radius: 12px;
+        padding: 28px;
+        margin-bottom: 24px;
+    }
+
+        .card h2 {
+            margin-top: 0;
+            font-size: 1rem;
+            color: #5F5E5A;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+    .form-group {
+        margin-bottom: 16px;
+    }
+
+    label {
+        display: block;
+        font-size: 0.85rem;
+        color: #444441;
+        margin-bottom: 6px;
+    }
+
+    input[type=text], input[type=date], select {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 8px;
+        border: 1px solid #D8D5CA;
+        background: #FAF9F5;
+        color: #2C2C2A;
+        font-size: 0.95rem;
+    }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #D85A30;
+        }
+
+    .row-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+
+    button {
+        width: 100%;
+        padding: 12px;
+        border: none;
+        border-radius: 8px;
+        background: #D85A30;
+        color: #FFFFFF;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        margin-top: 8px;
+    }
+
+        button:hover {
+            background: #993C1D;
+        }
+
+    .btn-confirmar {
+        background: #3B6D11;
+    }
+
+        .btn-confirmar:hover {
+            background: #27500A;
+        }
+
+    .btn-cancelar {
+        background: #A32D2D;
+    }
+
+        .btn-cancelar:hover {
+            background: #791F1F;
+        }
+
+    .resultado-ok {
+        border-left: 4px solid #639922;
+    }
+
+    .resultado-error {
+        border-left: 4px solid #A32D2D;
+    }
+
+    .resultado-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #EDEBE3;
+        font-size: 0.9rem;
+        color: #444441;
+    }
+
+        .resultado-row:last-child {
+            border-bottom: none;
+        }
+
+        .resultado-row .valor {
+            font-weight: 600;
+            color: #2C2C2A;
+        }
+
+    .estado-valido, .estado-disponible {
+        color: #3B6D11;
+    }
+
+    .estado-invalido, .estado-bloqueado, .estado-agotado {
+        color: #A32D2D;
+    }
+
+    .mensaje-error {
+        color: #791F1F;
+        font-size: 0.9rem;
+        margin: 0;
+    }
+</style>
+
+<div class="card">
+    <h2>Consulta de Disponibilidad de Viaje</h2>
+
+    <form method="post" asp-page-handler="Consultar">
+        <div class="form-group">
+            <label for="Documento">Documento del pasajero</label>
+            <input type="text" id="Documento" asp-for="Documento" placeholder="Ej. 70001111" />
+        </div>
+
+        <div class="row-2">
+            <div class="form-group">
+                <label for="Origen">Origen</label>
+                <select id="Origen" asp-for="Origen">
+                    @foreach (var ciudad in Model.Ciudades)
+                    {
+                        <option value="@ciudad">@ciudad</option>
+                    }
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="Destino">Destino</label>
+                <select id="Destino" asp-for="Destino">
+                    @foreach (var ciudad in Model.Ciudades)
+                    {
+                        <option value="@ciudad">@ciudad</option>
+                    }
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="FechaViaje">Fecha de viaje</label>
+            <input type="date" id="FechaViaje" asp-for="FechaViaje" />
+        </div>
+
+        <button type="submit">Consultar disponibilidad</button>
+    </form>
+</div>
+
+@if (Model.MostrarTarjeta)
+{
+    <div class="card @(Model.TarjetaExitosa ? "resultado-ok" : "resultado-error")">
+        <h2>@Model.TituloTarjeta</h2>
+
+        @if (Model.TarjetaExitosa)
+        {
+            @if (!string.IsNullOrEmpty(Model.ResultadoPasajero))
+            {
+                <div class="resultado-row">
+                    <span>Pasajero</span>
+                    <span class="valor">@Model.ResultadoPasajero</span>
+                </div>
+            }
+            @if (!string.IsNullOrEmpty(Model.ResultadoEstadoPasajero))
+            {
+                <div class="resultado-row">
+                    <span>Estado</span>
+                    <span class="valor estado-@Model.ResultadoEstadoPasajero.ToLower()">Pasajero @Model.ResultadoEstadoPasajero.ToLower()</span>
+                </div>
+            }
+            <div class="resultado-row">
+                <span>Ruta</span>
+                <span class="valor">@Model.ResultadoRuta</span>
+            </div>
+            <div class="resultado-row">
+                <span>Fecha</span>
+                <span class="valor">@Model.ResultadoFecha</span>
+            </div>
+            <div class="resultado-row">
+                <span>Cupos</span>
+                <span class="valor">@Model.ResultadoCupos disponibles</span>
+            </div>
+            <div class="resultado-row">
+                <span>Estado del viaje</span>
+                <span class="valor estado-@Model.ResultadoEstadoViaje.ToLower()">@Model.ResultadoEstadoViaje</span>
+            </div>
+
+            @if (!string.IsNullOrEmpty(Model.MensajeTarjeta))
+            {
+                <p style="font-size: 0.85rem; color: #5F5E5A; margin: 12px 0 0;">@Model.MensajeTarjeta</p>
+            }
+
+            @if (Model.PuedeConfirmar)
+            {
+                <form method="post" asp-page-handler="Confirmar" style="margin-top: 16px;">
+                    <input type="hidden" asp-for="Documento" />
+                    <input type="hidden" asp-for="Origen" />
+                    <input type="hidden" asp-for="Destino" />
+                    <input type="hidden" asp-for="FechaViaje" />
+                    <button type="submit" class="btn-confirmar">Confirmar reserva</button>
+                </form>
+            }
+
+            @if (Model.PuedeCancelar)
+            {
+                <form method="post" asp-page-handler="Cancelar" style="margin-top: 16px;">
+                    <input type="hidden" asp-for="Documento" />
+                    <input type="hidden" asp-for="Origen" />
+                    <input type="hidden" asp-for="Destino" />
+                    <input type="hidden" asp-for="FechaViaje" />
+                    <button type="submit" class="btn-cancelar">Cancelar reserva</button>
+                </form>
+            }
+        }
+        else
+        {
+            <p class="mensaje-error">@Model.MensajeTarjeta</p>
+        }
+    </div>
+}

@@ -1,0 +1,78 @@
+version: "3.9"
+
+# =============================================================================
+# docker-compose.yml - Arquitectura SOA con ESB
+#
+# Levanta 5 contenedores:
+#   - servicio-pasajeros        (SOAP, puerto host 5001)
+#   - servicio-rutas            (SOAP, puerto host 5002)
+#   - servicio-disponibilidad   (SOAP, puerto host 5003)
+#   - bus-esb                   (SOAP, orquesta los 3 anteriores, puerto host 5000)
+#   - web-cliente                (Razor Pages, consume el bus, puerto host 5080)
+#
+# Para levantar todo:
+#   docker compose up --build
+# =============================================================================
+
+services:
+
+  servicio-pasajeros:
+    build:
+      context: ./ServicioPasajeros
+    container_name: servicio-pasajeros
+    ports:
+      - "5001:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - soa-network
+
+  servicio-rutas:
+    build:
+      context: ./ServicioRutas
+    container_name: servicio-rutas
+    ports:
+      - "5002:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - soa-network
+
+  servicio-disponibilidad:
+    build:
+      context: ./ServicioDisponibilidad
+    container_name: servicio-disponibilidad
+    ports:
+      - "5003:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - soa-network
+
+  bus-esb:
+    build:
+      context: ./BusESB
+    container_name: bus-esb
+    ports:
+      - "5000:8080"
+    depends_on:
+      - servicio-pasajeros
+      - servicio-rutas
+      - servicio-disponibilidad
+    networks:
+      - soa-network
+
+  web-cliente:
+    build:
+      context: ./WebCliente
+    container_name: web-cliente
+    ports:
+      - "5080:8080"
+    depends_on:
+      - bus-esb
+    networks:
+      - soa-network
+
+networks:
+  soa-network:
+    driver: bridge
